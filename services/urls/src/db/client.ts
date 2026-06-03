@@ -36,3 +36,7 @@ const pool = new Pool({
 });
 
 export const db = drizzle(pool, { schema });
+
+export async function closeDatabase(): Promise<void> {
+  await pool.end();
+}

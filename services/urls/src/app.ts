@@ -1,37 +1,10 @@
 import { Hono } from "hono";
+import { requestLogger } from "./middleware/request-logger.js";
 import urls from "./routes/urls.js";
-import { logger } from "./utils/logger.js";
 
 export const app = new Hono();
 
-app.use(async (c, next) => {
-  const start = performance.now();
-
-  try {
-    await next();
-  } catch (error) {
-    logger.error(
-      {
-        error,
-        method: c.req.method,
-        path: c.req.path,
-        durationMs: Math.round(performance.now() - start),
-      },
-      "Request failed",
-    );
-    throw error;
-  }
-
-  logger.info(
-    {
-      method: c.req.method,
-      path: c.req.path,
-      status: c.res.status,
-      durationMs: Math.round(performance.now() - start),
-    },
-    "Request completed",
-  );
-});
+app.use(requestLogger);
 
 app.get("/health", (c) => {
   return c.json({ ok: true });

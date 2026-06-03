@@ -1,4 +1,5 @@
 import { Redis } from "ioredis";
+import { logger } from "../utils/logger.js";
 
 type RedisResource = {
   host: string;
@@ -41,5 +42,5 @@ export const redis = new Redis({
 });
 
 redis.on("error", (error: Error) => {
-  console.warn("Redis cache error", error);
+  logger.warn({ error }, "Redis cache error");
 });

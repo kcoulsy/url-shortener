@@ -1,6 +1,7 @@
 import { db } from "../db/client.js";
 import { urls } from "../db/schema.js";
 import { isUniqueViolation } from "../utils/errors.js";
+import { logger } from "../utils/logger.js";
 import { createShortCode } from "../utils/short-code.js";
 import { createCachedShortUrl } from "./create-cached-short-url.js";
 
@@ -18,6 +19,8 @@ export async function createShortUrl(longUrl: string): Promise<ShortUrl> {
       if (!isUniqueViolation(error)) {
         throw error;
       }
+
+      logger.warn({ shortCode, attempt: attempt + 1 }, "Generated short code already exists");
     }
   }
 

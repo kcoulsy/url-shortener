@@ -1,7 +1,7 @@
 opencollection: 1.0.0
 
 info:
-  name: Web API Docs
+  name: Urls API Docs
 bundled: false
 extensions:
   bruno:

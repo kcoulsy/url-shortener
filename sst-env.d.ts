@@ -24,7 +24,7 @@ declare module "sst" {
     "ShorteningVPC": {
       "type": "sst.aws.Vpc"
     }
-    "Web": {
+    "Urls": {
       "service": string
       "type": "sst.aws.Service"
       "url": string

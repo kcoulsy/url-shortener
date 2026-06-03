@@ -34,13 +34,13 @@ export default $config({
         port: 6379,
       },
     });
-    const cluster = new sst.aws.Cluster("WebCluster", { vpc });
+    const cluster = new sst.aws.Cluster("UrlsCluster", { vpc });
 
-    const web = new sst.aws.Service("Web", {
+    const urlsService = new sst.aws.Service("Urls", {
       cluster,
       link: [database, redis],
       image: {
-        context: "./services/web",
+        context: "./services/urls",
         dockerfile: "Dockerfile",
       },
       loadBalancer: {
@@ -48,13 +48,13 @@ export default $config({
       },
       dev: {
         command: "pnpm dev",
-        directory: "./services/web",
+        directory: "./services/urls",
         url: "http://localhost:3000",
       },
     });
 
     return {
-      web: web.url,
+      urls: urlsService.url,
       database: database.host,
       redis: redis.host,
     };

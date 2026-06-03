@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "name": "Web API Docs",
+  "name": "Urls API Docs",
   "type": "collection",
   "ignore": [
     "node_modules",

@@ -26,11 +26,19 @@ export default $config({
         database: "shortener",
       },
     });
+    const redis = new sst.aws.Redis("ShorteningRedis", {
+      vpc,
+      cluster: false,
+      dev: {
+        host: "localhost",
+        port: 6379,
+      },
+    });
     const cluster = new sst.aws.Cluster("WebCluster", { vpc });
 
     const web = new sst.aws.Service("Web", {
       cluster,
-      link: [database],
+      link: [database, redis],
       image: {
         context: "./services/web",
         dockerfile: "Dockerfile",
@@ -48,6 +56,7 @@ export default $config({
     return {
       web: web.url,
       database: database.host,
+      redis: redis.host,
     };
   },
 });

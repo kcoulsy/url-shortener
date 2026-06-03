@@ -6,3 +6,10 @@ Design Decisions
 
 - stateful servers with autoscaling to avoid cold starts vs a lambda
 - postgres over DynamoDB for incremental ids which are then converted to base62
+- redis caches short URL lookups for 24 hours
+
+Local services
+
+```sh
+docker compose up -d
+```

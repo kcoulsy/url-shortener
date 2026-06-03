@@ -1,10 +1,15 @@
 info:
   name: GET urls
   type: http
+  seq: 1
 
 http:
   method: GET
-  url: http://localhost:3000/urls/EuhU4XU
+  url: http://localhost:3000/urls/EuhU4XU?mode=info
+  params:
+    - name: mode
+      value: info
+      type: query
   auth: inherit
 
 settings:

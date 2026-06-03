@@ -7,11 +7,11 @@ import { isShortCode } from "../utils/short-code.js";
 
 const app = new Hono().basePath("/urls");
 
-const UrlSchema = z.object({
+const PostUrlSchema = z.object({
   url: z.url(),
 });
 
-app.post("/", zValidator("json", UrlSchema), async (c) => {
+app.post("/", zValidator("json", PostUrlSchema), async (c) => {
   const longUrl = c.req.valid("json").url;
   const url = await createShortUrl(longUrl);
   const shortUrl = new URL(`/urls/${url.shortCode}`, c.req.url).toString();
@@ -19,18 +19,35 @@ app.post("/", zValidator("json", UrlSchema), async (c) => {
   return c.json({ success: true, longUrl, shortCode: url.shortCode, shortUrl });
 });
 
-app.get("/:code", async (c) => {
-  const shortCode = c.req.param("code");
-  if (!isShortCode(shortCode)) {
-    return c.json({ success: false, error: "Invalid short code" }, 400);
-  }
-
-  const url = await getFromShortUrl(shortCode);
-  if (!url) {
-    return c.json({ success: false, error: "Short URL not found" }, 404);
-  }
-
-  return c.redirect(url.longUrl);
+const GetUrlParamsSchema = z.object({
+  code: z.string(),
 });
+
+const GetUrlQuerySchema = z.object({
+  mode: z.union([z.literal("redirect"), z.literal("info")]).default("redirect"),
+});
+
+app.get(
+  "/:code",
+  zValidator("param", GetUrlParamsSchema),
+  zValidator("query", GetUrlQuerySchema),
+  async (c) => {
+    const shortCode = c.req.param("code");
+    if (!isShortCode(shortCode)) {
+      return c.json({ success: false, error: "Invalid short code" }, 400);
+    }
+
+    const url = await getFromShortUrl(shortCode);
+    if (!url) {
+      return c.json({ success: false, error: "Short URL not found" }, 404);
+    }
+
+    if (c.req.valid("query").mode === "info") {
+      return c.json({ success: true, shortCode: url.shortCode, longUrl: url.longUrl });
+    }
+
+    return c.redirect(url.longUrl);
+  },
+);
 
 export default app;

@@ -2,6 +2,7 @@ import { db } from "../db/client.js";
 import { urls } from "../db/schema.js";
 import { isUniqueViolation } from "../utils/errors.js";
 import { createShortCode } from "../utils/short-code.js";
+import { createCachedShortUrl } from "./create-cached-short-url.js";
 
 export type ShortUrl = typeof urls.$inferSelect;
 
@@ -11,6 +12,7 @@ export async function createShortUrl(longUrl: string): Promise<ShortUrl> {
 
     try {
       const [url] = await db.insert(urls).values({ longUrl, shortCode }).returning();
+      await createCachedShortUrl(url);
       return url;
     } catch (error) {
       if (!isUniqueViolation(error)) {

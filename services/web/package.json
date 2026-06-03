@@ -15,6 +15,9 @@
     "lint": "oxlint src svelte.config.js vite.config.ts --deny-warnings",
     "lint:fix": "oxlint src svelte.config.js vite.config.ts --fix"
   },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.1060.0"
+  },
   "devDependencies": {
     "@sveltejs/kit": "^2.57.0",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",

@@ -7,12 +7,12 @@ import { createCachedShortUrl } from "./create-cached-short-url.js";
 
 export type ShortUrl = typeof urls.$inferSelect;
 
-export async function createShortUrl(longUrl: string): Promise<ShortUrl> {
+export async function createShortUrl(longUrl: string, ownerSub: string): Promise<ShortUrl> {
   for (let attempt = 0; attempt < 5; attempt++) {
     const shortCode = createShortCode();
 
     try {
-      const [url] = await db.insert(urls).values({ longUrl, shortCode }).returning();
+      const [url] = await db.insert(urls).values({ longUrl, ownerSub, shortCode }).returning();
       await createCachedShortUrl(url);
       return url;
     } catch (error) {

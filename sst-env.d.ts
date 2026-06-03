@@ -29,9 +29,18 @@ declare module "sst" {
       "type": "sst.aws.Service"
       "url": string
     }
+    "Users": {
+      "id": string
+      "type": "sst.aws.CognitoUserPool"
+    }
     "Web": {
       "type": "sst.aws.SvelteKit"
       "url": string
+    }
+    "WebClient": {
+      "id": string
+      "secret": string
+      "type": "sst.aws.CognitoUserPoolClient"
     }
   }
 }

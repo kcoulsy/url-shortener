@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { urls } from "../db/schema.js";
 import { createCachedShortUrl } from "../mutations/create-cached-short-url.js";
@@ -20,6 +20,19 @@ export async function getFromShortUrl(shortCode: string): Promise<ResolvedShortU
     logger.debug({ shortCode }, "Short URL resolved from database");
     await createCachedShortUrl(url);
   }
+
+  return url;
+}
+
+export async function getOwnedShortUrl(
+  shortCode: string,
+  ownerSub: string,
+): Promise<ResolvedShortUrl | undefined> {
+  const [url] = await db
+    .select()
+    .from(urls)
+    .where(and(eq(urls.shortCode, shortCode), eq(urls.ownerSub, ownerSub)))
+    .limit(1);
 
   return url;
 }

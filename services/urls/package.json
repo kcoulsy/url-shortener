@@ -23,6 +23,7 @@
   "dependencies": {
     "@hono/node-server": "^2.0.4",
     "@hono/zod-validator": "^0.8.0",
+    "aws-jwt-verify": "^5.1.1",
     "drizzle-orm": "^0.44.7",
     "hono": "^4.12.23",
     "ioredis": "^5.8.2",

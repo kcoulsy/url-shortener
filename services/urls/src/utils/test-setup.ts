@@ -13,6 +13,8 @@ process.env.POSTGRES_PASSWORD ??= "password";
 process.env.POSTGRES_DB ??= "shortener";
 process.env.REDIS_HOST ??= "localhost";
 process.env.REDIS_PORT ??= "6379";
+process.env.COGNITO_CLIENT_ID ??= "test-client";
+process.env.COGNITO_USER_POOL_ID ??= "us-east-1_test";
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -46,6 +48,7 @@ async function resetSchema(): Promise<void> {
   await pool.query('DROP TABLE IF EXISTS "urls"');
   await runMigration("0000_quiet_shiver_man.sql");
   await runMigration("0001_wild_ogun.sql");
+  await runMigration("0002_owner_sub.sql");
 }
 
 async function resetData(): Promise<void> {
@@ -58,7 +61,9 @@ beforeAll(async () => {
     await pool.query("SELECT 1");
     await redis.ping();
   } catch (error) {
-    throw new Error("URLs tests require Postgres and Redis from `docker compose up -d`.", { cause: error });
+    throw new Error("URLs tests require Postgres and Redis from `docker compose up -d`.", {
+      cause: error,
+    });
   }
 
   await resetSchema();

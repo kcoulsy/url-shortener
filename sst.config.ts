@@ -14,6 +14,7 @@ export default $config({
     };
   },
   async run() {
+    const region = process.env.AWS_REGION || "us-east-1";
     const vpc = new sst.aws.Vpc("ShorteningVPC");
     const database = new sst.aws.Postgres("ShorteningPostgres", {
       vpc,
@@ -35,10 +36,30 @@ export default $config({
       },
     });
     const cluster = new sst.aws.Cluster("UrlsCluster", { vpc });
+    const userPool = new sst.aws.CognitoUserPool("Users", {
+      usernames: ["email"],
+      verify: {
+        emailSubject: "Verify your URL shortener account",
+        emailMessage: "Your URL shortener verification code is {####}",
+      },
+    });
+    const userPoolClient = userPool.addClient("WebClient", {
+      transform: {
+        client: {
+          explicitAuthFlows: ["ALLOW_USER_PASSWORD_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"],
+          preventUserExistenceErrors: "ENABLED",
+        },
+      },
+    });
 
     const urlsService = new sst.aws.Service("Urls", {
       cluster,
       link: [database, redis],
+      environment: {
+        COGNITO_CLIENT_ID: userPoolClient.id,
+        COGNITO_REGION: region,
+        COGNITO_USER_POOL_ID: userPool.id,
+      },
       image: {
         context: "./services/urls",
         dockerfile: "Dockerfile",
@@ -57,6 +78,9 @@ export default $config({
       path: "services/web",
       link: [urlsService],
       environment: {
+        COGNITO_CLIENT_ID: userPoolClient.id,
+        COGNITO_REGION: region,
+        COGNITO_USER_POOL_ID: userPool.id,
         PUBLIC_URLS_URL: urlsService.url,
       },
       buildCommand: "pnpm build",
@@ -71,6 +95,8 @@ export default $config({
       urls: urlsService.url,
       database: database.host,
       redis: redis.host,
+      userPool: userPool.id,
+      userPoolClient: userPoolClient.id,
       web: webService.url,
     };
   },

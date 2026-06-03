@@ -32,11 +32,19 @@ describe("createShortUrl", () => {
   it("inserts a row and writes it to cache", async () => {
     shortCodes.push("New0001");
 
-    const url = await createShortUrl("https://example.com/new");
+    const url = await createShortUrl("https://example.com/new", "user-1");
 
-    expect(url).toMatchObject({ shortCode: "New0001", longUrl: "https://example.com/new" });
+    expect(url).toMatchObject({
+      shortCode: "New0001",
+      longUrl: "https://example.com/new",
+      ownerSub: "user-1",
+    });
     const [stored] = await db.select().from(urls);
-    expect(stored).toMatchObject({ shortCode: "New0001", longUrl: "https://example.com/new" });
+    expect(stored).toMatchObject({
+      shortCode: "New0001",
+      longUrl: "https://example.com/new",
+      ownerSub: "user-1",
+    });
     await expect(redis.get(shortUrlCacheKey("New0001"))).resolves.toBe(
       JSON.stringify({ shortCode: "New0001", longUrl: "https://example.com/new" }),
     );
@@ -46,7 +54,7 @@ describe("createShortUrl", () => {
     await db.insert(urls).values({ shortCode: "Dup0001", longUrl: "https://example.com/old" });
     shortCodes.push("Dup0001", "Fresh01");
 
-    const url = await createShortUrl("https://example.com/fresh");
+    const url = await createShortUrl("https://example.com/fresh", "user-1");
 
     expect(url).toMatchObject({ shortCode: "Fresh01", longUrl: "https://example.com/fresh" });
   });
@@ -55,7 +63,7 @@ describe("createShortUrl", () => {
     await db.insert(urls).values({ shortCode: "Same001", longUrl: "https://example.com/same" });
     shortCodes.push("Same001", "Same001", "Same001", "Same001", "Same001");
 
-    await expect(createShortUrl("https://example.com/exhausted")).rejects.toThrow(
+    await expect(createShortUrl("https://example.com/exhausted", "user-1")).rejects.toThrow(
       "Could not generate a unique short code",
     );
   });
@@ -63,7 +71,7 @@ describe("createShortUrl", () => {
   it("rethrows non-unique database errors", async () => {
     shortCodes.push("Null001");
 
-    await expect(createShortUrl(null as unknown as string)).rejects.toMatchObject({
+    await expect(createShortUrl(null as unknown as string, "user-1")).rejects.toMatchObject({
       cause: { code: "23502" },
     });
   });

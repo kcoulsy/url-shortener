@@ -2,50 +2,17 @@
 	import {
 		Badge,
 		Button,
-		Checkbox,
-		PasswordInput,
-		Select,
 		Table,
 		TableBody,
 		TableCell,
 		TableHead,
 		TableHeader,
 		TableRow,
-		Textarea,
 		TextInput
 	} from '$lib';
+	import type { ActionData, PageData } from './$types';
 
-	let destinationUrl = $state('');
-	let customSlug = $state('');
-	let password = $state('');
-	let expiration = $state('');
-	let notes = $state('');
-	let protectedLink = $state(false);
-	let trackAnalytics = $state(true);
-
-	const links = [
-		{
-			shortUrl: 'sho.rt/sprint',
-			destination: 'https://example.com/product/spring-launch',
-			clicks: 842,
-			status: 'Active',
-			tone: 'success'
-		},
-		{
-			shortUrl: 'sho.rt/docs',
-			destination: 'https://example.com/internal/url-shortener-spec',
-			clicks: 128,
-			status: 'Protected',
-			tone: 'warning'
-		},
-		{
-			shortUrl: 'sho.rt/old',
-			destination: 'https://example.com/retired-campaign',
-			clicks: 23,
-			status: 'Expired',
-			tone: 'neutral'
-		}
-	] as const;
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 </script>
 
 <svelte:head>
@@ -58,65 +25,45 @@
 			<div>
 				<p class="text-sm font-medium text-sky-700">URL shortener</p>
 				<h1 class="mt-2 text-3xl font-semibold tracking-normal text-slate-950">Create and manage links</h1>
+				<p class="mt-2 text-sm text-slate-500">{data.user.email ?? data.user.username ?? data.user.sub}</p>
 			</div>
 			<div class="flex gap-3">
-				<Button variant="secondary">Import CSV</Button>
-				<Button>Create link</Button>
+				<a
+					class="inline-flex h-10 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+					href="/logout"
+				>
+					Sign out
+				</a>
 			</div>
 		</header>
 
 		<section class="grid gap-6 lg:grid-cols-[minmax(0,420px)_1fr]">
-			<form class="grid gap-5 rounded-md border border-slate-200 bg-white p-5 shadow-sm">
+			<form method="post" action="?/create" class="grid gap-5 rounded-md border border-slate-200 bg-white p-5 shadow-sm">
 				<div>
 					<h2 class="text-base font-semibold text-slate-950">New short link</h2>
-					<p class="mt-1 text-sm text-slate-500">Reusable base form controls for the shortener workflow.</p>
+					<p class="mt-1 text-sm text-slate-500">Create a link owned by your signed-in account.</p>
 				</div>
+
+				{#if form?.error}
+					<p class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">{form.error}</p>
+				{/if}
+
+				{#if form?.created}
+					<p class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+						Created {form.created}
+					</p>
+				{/if}
 
 				<TextInput
 					label="Destination URL"
+					name="url"
 					placeholder="https://example.com/landing-page"
 					type="url"
-					bind:value={destinationUrl}
+					value={form?.url ?? ''}
+					required
 				/>
-
-				<TextInput
-					label="Custom slug"
-					description="Leave blank to generate one automatically."
-					placeholder="summer-campaign"
-					bind:value={customSlug}
-				/>
-
-				<Select
-					label="Expiration"
-					placeholder="No expiration"
-					bind:value={expiration}
-					options={[
-						{ label: '24 hours', value: '24h' },
-						{ label: '7 days', value: '7d' },
-						{ label: '30 days', value: '30d' }
-					]}
-				/>
-
-				<Checkbox
-					label="Require password"
-					description="Visitors must enter a password before redirecting."
-					bind:checked={protectedLink}
-				/>
-
-				{#if protectedLink}
-					<PasswordInput label="Link password" placeholder="Set access password" bind:value={password} />
-				{/if}
-
-				<Checkbox
-					label="Track analytics"
-					description="Collect click totals, referrers, devices, and countries."
-					bind:checked={trackAnalytics}
-				/>
-
-				<Textarea label="Internal notes" placeholder="Campaign owner, purpose, or rollout details" bind:value={notes} />
 
 				<div class="flex justify-end gap-3 border-t border-slate-100 pt-5">
-					<Button variant="ghost">Reset</Button>
 					<Button type="submit">Shorten URL</Button>
 				</div>
 			</form>
@@ -125,9 +72,8 @@
 				<div class="flex items-center justify-between gap-4">
 					<div>
 						<h2 class="text-base font-semibold text-slate-950">Recent links</h2>
-						<p class="mt-1 text-sm text-slate-500">Table primitives for management views.</p>
+						<p class="mt-1 text-sm text-slate-500">Links created by your account.</p>
 					</div>
-					<Button variant="secondary" size="sm">Export</Button>
 				</div>
 
 				<Table>
@@ -135,24 +81,19 @@
 						<TableRow>
 							<TableHead>Short URL</TableHead>
 							<TableHead>Destination</TableHead>
-							<TableHead class="text-right">Clicks</TableHead>
 							<TableHead>Status</TableHead>
-							<TableHead class="text-right">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{#each links as link}
+						{#each data.links as link}
 							<TableRow>
-								<TableCell class="font-medium text-slate-950">{link.shortUrl}</TableCell>
-								<TableCell class="max-w-72 truncate">{link.destination}</TableCell>
-								<TableCell class="text-right tabular-nums">{link.clicks}</TableCell>
-								<TableCell><Badge tone={link.tone}>{link.status}</Badge></TableCell>
-								<TableCell>
-									<div class="flex justify-end gap-2">
-										<Button variant="ghost" size="sm">Copy</Button>
-										<Button variant="secondary" size="sm">Edit</Button>
-									</div>
-								</TableCell>
+								<TableCell class="font-medium text-slate-950">/urls/{link.shortCode}</TableCell>
+								<TableCell class="max-w-72 truncate">{link.longUrl}</TableCell>
+								<TableCell><Badge tone="success">Active</Badge></TableCell>
+							</TableRow>
+						{:else}
+							<TableRow>
+								<TableCell class="text-slate-500" colspan={3}>No links yet.</TableCell>
 							</TableRow>
 						{/each}
 					</TableBody>

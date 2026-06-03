@@ -3,8 +3,10 @@
   "type": "module",
   "scripts": {
     "build": "esbuild --bundle --format=esm --outfile=./dist/index.js --platform=node --target=node20 ./src/index.ts",
-    "dev": "pnpm build && pnpm start",
-    "start": "node ./dist/index.js"
+    "build:watch": "esbuild --bundle --format=esm --outfile=./dist/index.js --platform=node --target=node20 --watch=forever ./src/index.ts",
+    "dev": "pnpm build && run-p build:watch start:watch",
+    "start": "node ./dist/index.js",
+    "start:watch": "node --watch ./dist/index.js"
   },
   "devDependencies": {
     "esbuild": "^0.21.4",

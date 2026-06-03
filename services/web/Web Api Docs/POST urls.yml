@@ -1,0 +1,20 @@
+info:
+  name: POST urls
+  type: http
+
+http:
+  method: POST
+  url: http://localhost:3000/urls
+  body:
+    type: json
+    data: |-
+      {
+        "url": "https://www.google.com"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

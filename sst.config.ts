@@ -15,10 +15,22 @@ export default $config({
   },
   async run() {
     const vpc = new sst.aws.Vpc("ShorteningVPC");
+    const database = new sst.aws.Postgres("ShorteningPostgres", {
+      vpc,
+      database: "shortener",
+      dev: {
+        host: "localhost",
+        port: 5432,
+        username: "postgres",
+        password: "password",
+        database: "shortener",
+      },
+    });
     const cluster = new sst.aws.Cluster("WebCluster", { vpc });
 
     const web = new sst.aws.Service("Web", {
       cluster,
+      link: [database],
       image: {
         context: "./services/web",
         dockerfile: "Dockerfile",
@@ -35,6 +47,7 @@ export default $config({
 
     return {
       web: web.url,
+      database: database.host,
     };
   },
 });

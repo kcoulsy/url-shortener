@@ -1,30 +1,8 @@
-# AWS Project
+# URL Shortening Service
 
-Simple SST monorepo starter with one API Gateway route backed by an AWS Lambda function.
+Classic system design problem, in this case I have built out a small project using SST to deploy to AWS.
 
-## Structure
+Design Decisions
 
-- `sst.config.ts` defines the AWS resources.
-- `packages/functions` contains Lambda handlers.
-- `packages/core` contains shared application code.
-
-## Getting Started
-
-```bash
-pnpm install
-pnpm setup
-pnpm check
-pnpm dev
-```
-
-To deploy:
-
-```bash
-pnpm deploy --stage dev
-```
-
-SST will print the API URL after deploy. The initial route is:
-
-```text
-GET /
-```
+- stateful servers with autoscaling to avoid cold starts vs a lambda
+- postgres over DynamoDB for incremental ids which are then converted to base62

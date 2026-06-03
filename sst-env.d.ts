@@ -6,6 +6,14 @@
 
 declare module "sst" {
   export interface Resource {
+    "ShorteningPostgres": {
+      "database": string
+      "host": string
+      "password": string
+      "port": number
+      "type": "sst.aws.Postgres"
+      "username": string
+    }
     "ShorteningVPC": {
       "type": "sst.aws.Vpc"
     }

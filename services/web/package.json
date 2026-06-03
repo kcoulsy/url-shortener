@@ -2,21 +2,29 @@
   "name": "web",
   "type": "module",
   "scripts": {
-    "build": "esbuild --bundle --format=esm --outfile=./dist/index.js --platform=node --target=node20 ./src/index.ts",
-    "build:watch": "esbuild --bundle --format=esm --outfile=./dist/index.js --platform=node --target=node20 --watch=forever ./src/index.ts",
+    "bundle": "esbuild --bundle --format=esm --outfile=./dist/index.js --platform=node --target=node20 --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" ./src/index.ts",
+    "build": "pnpm bundle",
+    "build:watch": "pnpm bundle --watch=forever",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
     "dev": "pnpm build && run-p build:watch start:watch",
     "start": "node ./dist/index.js",
     "start:watch": "node --watch ./dist/index.js"
   },
-  "devDependencies": {
-    "esbuild": "^0.21.4",
-    "npm-run-all2": "^6.2.0"
-  },
   "dependencies": {
     "@hono/zod-validator": "^0.8.0",
+    "drizzle-orm": "^0.44.7",
     "hono": "^4.12.23",
     "oxfmt": "^0.53.0",
     "oxlint": "^1.68.0",
+    "pg": "^8.16.3",
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.5",
+    "drizzle-kit": "^0.31.5",
+    "esbuild": "^0.21.4",
+    "npm-run-all2": "^6.2.0"
   }
 }

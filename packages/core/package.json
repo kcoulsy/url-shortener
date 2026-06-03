@@ -1,0 +1,9 @@
+{
+  "name": "@aws-project/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./greeting": "./src/greeting.ts"
+  }
+}

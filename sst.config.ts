@@ -53,10 +53,25 @@ export default $config({
       },
     });
 
+    const webService = new sst.aws.SvelteKit("Web", {
+      path: "services/web",
+      link: [urlsService],
+      environment: {
+        PUBLIC_URLS_URL: urlsService.url,
+      },
+      buildCommand: "pnpm build",
+      dev: {
+        command: "pnpm dev --host 0.0.0.0",
+        directory: "./services/web",
+        url: "http://localhost:5173",
+      },
+    });
+
     return {
       urls: urlsService.url,
       database: database.host,
       redis: redis.host,
+      web: webService.url,
     };
   },
 });

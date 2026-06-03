@@ -29,6 +29,10 @@ declare module "sst" {
       "type": "sst.aws.Service"
       "url": string
     }
+    "Web": {
+      "type": "sst.aws.SvelteKit"
+      "url": string
+    }
   }
 }
 

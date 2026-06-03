@@ -6,8 +6,12 @@
 
 declare module "sst" {
   export interface Resource {
-    "Api": {
-      "type": "sst.aws.ApiGatewayV2"
+    "ShorteningVPC": {
+      "type": "sst.aws.Vpc"
+    }
+    "Web": {
+      "service": string
+      "type": "sst.aws.Service"
       "url": string
     }
   }

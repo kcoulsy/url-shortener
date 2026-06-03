@@ -1,12 +1,11 @@
 node_modules/
 .turbo/
 .sst/
-.env
-.env.*
-!.env.example
 build/
 dist/
 coverage/
 **/.svelte-kit/
 **/build/
 **/dist/
+**/drizzle/meta/
+**/sst-env.d.ts

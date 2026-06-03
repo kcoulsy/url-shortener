@@ -4,7 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "tsc --noEmit",
+    "check": "pnpm check:types && pnpm lint && pnpm format:check",
+    "check:types": "tsc --noEmit && turbo run check",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint sst.config.ts --allow typescript/triple-slash-reference --deny-warnings && turbo run lint",
+    "lint:fix": "oxlint sst.config.ts --allow typescript/triple-slash-reference --fix && turbo run lint:fix",
     "dev": "sst dev",
     "deploy": "sst deploy",
     "remove": "sst remove",
@@ -14,7 +19,10 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.149",
     "@types/node": "^22.15.30",
+    "oxfmt": "^0.53.0",
+    "oxlint": "^1.68.0",
     "sst": "^4.15.2",
+    "turbo": "^2.9.16",
     "typescript": "^5.8.3"
   },
   "packageManager": "pnpm@10.12.1"

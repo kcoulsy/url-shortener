@@ -5,8 +5,9 @@ Classic system design problem, in this case I have built out a small project usi
 Design Decisions
 
 - stateful servers with autoscaling to avoid cold starts vs a lambda
-- postgres over DynamoDB for incremental ids which are then converted to base62
+- postgres over DynamoDB
 - redis caches short URL lookups for 24 hours
+- split into microservices: web, urs and analytics
 
 Local services
 

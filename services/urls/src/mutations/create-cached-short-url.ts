@@ -12,8 +12,16 @@ export async function createCachedShortUrl(url: CachedShortUrl): Promise<void> {
       longUrl: url.longUrl,
     };
 
-    await redis.set(shortUrlCacheKey(url.shortCode), JSON.stringify(cacheEntry), "EX", shortUrlCacheTtlSeconds);
-    logger.debug({ shortCode: url.shortCode, ttlSeconds: shortUrlCacheTtlSeconds }, "Short URL cached");
+    await redis.set(
+      shortUrlCacheKey(url.shortCode),
+      JSON.stringify(cacheEntry),
+      "EX",
+      shortUrlCacheTtlSeconds,
+    );
+    logger.debug(
+      { shortCode: url.shortCode, ttlSeconds: shortUrlCacheTtlSeconds },
+      "Short URL cached",
+    );
   } catch (error) {
     logger.warn({ error, shortCode: url.shortCode }, "Could not write short URL to Redis cache");
   }

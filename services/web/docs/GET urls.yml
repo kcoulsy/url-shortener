@@ -1,0 +1,14 @@
+info:
+  name: GET urls
+  type: http
+
+http:
+  method: GET
+  url: http://localhost:3000/urls/EuhU4XU
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -13,6 +13,7 @@
     "start:watch": "node --watch ./dist/index.js"
   },
   "dependencies": {
+    "@hono/node-server": "^2.0.4",
     "@hono/zod-validator": "^0.8.0",
     "drizzle-orm": "^0.44.7",
     "hono": "^4.12.23",

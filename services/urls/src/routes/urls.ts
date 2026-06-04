@@ -25,6 +25,7 @@ app.get("/", requireAuth, async (c) => {
     links: links.map((link) => ({
       ...link,
       createdAt: link.createdAt.toISOString(),
+      lastClickedAt: link.lastClickedAt?.toISOString() ?? null,
     })),
   };
 

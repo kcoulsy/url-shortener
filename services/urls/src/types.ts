@@ -4,8 +4,10 @@ export type ErrorResponse = {
 };
 
 export type ServiceLink = {
+  clickCount: number;
   createdAt: string;
   customSlug: string | null;
+  lastClickedAt: string | null;
   longUrl: string;
   shortCode: string;
 };

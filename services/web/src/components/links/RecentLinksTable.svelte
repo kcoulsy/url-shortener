@@ -8,14 +8,20 @@
 	import TableRow from '$components/ui/TableRow.svelte';
 
 	type Link = {
+		clickCount: number;
 		createdAt: string;
 		customSlug: string | null;
+		lastClickedAt: string | null;
 		longUrl: string;
 		shortCode: string;
 		shortUrl: string;
 	};
 
 	let { links }: { links: Link[] } = $props();
+
+	function formatLastClickedAt(value: string | null): string {
+		return value ? new Date(value).toLocaleString() : 'Never';
+	}
 </script>
 
 <section class="grid gap-4">
@@ -31,6 +37,8 @@
 			<TableRow>
 				<TableHead>Short URL</TableHead>
 				<TableHead>Destination</TableHead>
+				<TableHead>Clicks</TableHead>
+				<TableHead>Last clicked</TableHead>
 				<TableHead>Status</TableHead>
 			</TableRow>
 		</TableHeader>
@@ -48,11 +56,19 @@
 						</a>
 					</TableCell>
 					<TableCell class="max-w-72 truncate">{link.longUrl}</TableCell>
+					<TableCell>{link.clickCount}</TableCell>
+					<TableCell>
+						{#if link.lastClickedAt}
+							<time datetime={link.lastClickedAt}>{formatLastClickedAt(link.lastClickedAt)}</time>
+						{:else}
+							Never
+						{/if}
+					</TableCell>
 					<TableCell><Badge tone="success">Active</Badge></TableCell>
 				</TableRow>
 			{:else}
 				<TableRow>
-					<TableCell class="text-slate-500" colspan={3}>No links yet.</TableCell>
+					<TableCell class="text-slate-500" colspan={5}>No links yet.</TableCell>
 				</TableRow>
 			{/each}
 		</TableBody>

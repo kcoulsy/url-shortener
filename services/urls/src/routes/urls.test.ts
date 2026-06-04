@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import "../utils/test-setup.js";
-import { db, urls } from "@aws-project/db";
+import { analyticsEvents, db, urls } from "@aws-project/db";
 import { publishRedirectEvent } from "../analytics/publisher.js";
 import { redis } from "../cache/client.js";
 import { shortUrlCacheKey } from "../utils/short-url-cache-key.js";
@@ -199,6 +199,66 @@ describe("urls routes", () => {
       links: [{ shortCode: "Mine001", longUrl: "https://example.com/mine" }],
     });
     expect(response.status).toBe(200);
+  });
+
+  it("lists click stats for the authenticated user's URLs", async () => {
+    const [activeLink, quietLink, otherUserLink] = await db
+      .insert(urls)
+      .values([
+        { shortCode: "Mine001", longUrl: "https://example.com/mine", ownerSub: "user-1" },
+        { shortCode: "Quiet01", longUrl: "https://example.com/quiet", ownerSub: "user-1" },
+        { shortCode: "Else001", longUrl: "https://example.com/else", ownerSub: "user-2" },
+      ])
+      .returning();
+    const firstClickAt = new Date("2026-01-01T10:00:00.000Z");
+    const latestClickAt = new Date("2026-01-02T10:00:00.000Z");
+
+    await db.insert(analyticsEvents).values([
+      {
+        urlId: activeLink.id,
+        shortCode: activeLink.shortCode,
+        pathSegment: activeLink.shortCode,
+        occurredAt: firstClickAt,
+      },
+      {
+        urlId: activeLink.id,
+        shortCode: activeLink.shortCode,
+        pathSegment: activeLink.shortCode,
+        occurredAt: latestClickAt,
+      },
+      {
+        urlId: otherUserLink.id,
+        shortCode: otherUserLink.shortCode,
+        pathSegment: otherUserLink.shortCode,
+        occurredAt: new Date("2026-01-03T10:00:00.000Z"),
+      },
+    ]);
+
+    const response = await app.request("/urls", { headers: authorization() });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      success: true,
+      links: expect.arrayContaining([
+        expect.objectContaining({
+          shortCode: activeLink.shortCode,
+          longUrl: activeLink.longUrl,
+          clickCount: 2,
+          lastClickedAt: latestClickAt.toISOString(),
+        }),
+        expect.objectContaining({
+          shortCode: quietLink.shortCode,
+          longUrl: quietLink.longUrl,
+          clickCount: 0,
+          lastClickedAt: null,
+        }),
+      ]),
+    });
+    expect(body.links).toHaveLength(2);
+    expect(body.links).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ shortCode: otherUserLink.shortCode })]),
+    );
   });
 
   it("returns URL info for an existing short code", async () => {

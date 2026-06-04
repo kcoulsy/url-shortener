@@ -1,12 +1,13 @@
+import { db, urls } from "@aws-project/db";
 import { and, eq, or } from "drizzle-orm";
-import { db } from "../db/client.js";
-import { urls } from "../db/schema.js";
 import { createCachedShortUrl } from "../mutations/create-cached-short-url.js";
 import { logger } from "../utils/logger.js";
 import { getCachedShortUrl } from "./get-cached-short-url.js";
 
 export type ShortUrl = typeof urls.$inferSelect;
-export type ResolvedShortUrl = Pick<ShortUrl, "shortCode" | "customSlug" | "longUrl">;
+export type ResolvedShortUrl = Pick<ShortUrl, "shortCode" | "customSlug" | "longUrl"> & {
+  id?: ShortUrl["id"];
+};
 
 export async function getFromShortUrl(pathSegment: string): Promise<ResolvedShortUrl | undefined> {
   const cachedUrl = await getCachedShortUrl(pathSegment);

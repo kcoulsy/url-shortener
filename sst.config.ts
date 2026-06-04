@@ -35,6 +35,14 @@ export default $config({
         port: 6379,
       },
     });
+    const analyticsEventsDlq = new sst.aws.Queue("AnalyticsEventsDLQ");
+    const analyticsEventsQueue = new sst.aws.Queue("AnalyticsEventsQueue", {
+      dlq: {
+        queue: analyticsEventsDlq.arn,
+        retry: 3,
+      },
+      visibilityTimeout: "30 seconds",
+    });
     const cluster = new sst.aws.Cluster("UrlsCluster", { vpc });
     const userPool = new sst.aws.CognitoUserPool("Users", {
       usernames: ["email"],
@@ -54,7 +62,7 @@ export default $config({
 
     const urlsService = new sst.aws.Service("Urls", {
       cluster,
-      link: [database, redis],
+      link: [database, redis, analyticsEventsQueue],
       environment: {
         COGNITO_CLIENT_ID: userPoolClient.id,
         COGNITO_REGION: region,
@@ -73,6 +81,21 @@ export default $config({
         url: "http://localhost:3000",
       },
     });
+
+    analyticsEventsQueue.subscribe(
+      {
+        handler: "services/analytics/src/handler.handler",
+        link: [database],
+        vpc,
+      },
+      {
+        batch: {
+          size: 10,
+          window: "5 seconds",
+          partialResponses: true,
+        },
+      },
+    );
 
     const webService = new sst.aws.SvelteKit("Web", {
       path: "services/web",
@@ -94,6 +117,7 @@ export default $config({
     return {
       urls: urlsService.url,
       database: database.host,
+      analyticsEventsQueue: analyticsEventsQueue.url,
       redis: redis.host,
       userPool: userPool.id,
       userPoolClient: userPoolClient.id,

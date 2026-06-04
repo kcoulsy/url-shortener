@@ -6,6 +6,14 @@
 
 declare module "sst" {
   export interface Resource {
+    "AnalyticsEventsDLQ": {
+      "type": "sst.aws.Queue"
+      "url": string
+    }
+    "AnalyticsEventsQueue": {
+      "type": "sst.aws.Queue"
+      "url": string
+    }
     "ShorteningPostgres": {
       "database": string
       "host": string

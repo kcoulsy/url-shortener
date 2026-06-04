@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import "../utils/test-setup.js";
+import { db, urls } from "@aws-project/db";
 import { redis } from "../cache/client.js";
-import { db } from "../db/client.js";
-import { urls } from "../db/schema.js";
 import { shortUrlCacheKey } from "../utils/short-url-cache-key.js";
 import { getFromShortUrl } from "./get-from-short-url.js";
 
@@ -25,7 +24,10 @@ describe("getFromShortUrl", () => {
   });
 
   it("falls back to the database and populates the cache", async () => {
-    await db.insert(urls).values({ shortCode: "Db00001", longUrl: "https://example.com/db" });
+    const [url] = await db
+      .insert(urls)
+      .values({ shortCode: "Db00001", longUrl: "https://example.com/db" })
+      .returning();
 
     await expect(getFromShortUrl("Db00001")).resolves.toEqual(
       expect.objectContaining({
@@ -34,14 +36,20 @@ describe("getFromShortUrl", () => {
       }),
     );
     await expect(redis.get(shortUrlCacheKey("Db00001"))).resolves.toBe(
-      JSON.stringify({ shortCode: "Db00001", longUrl: "https://example.com/db", customSlug: null }),
+      JSON.stringify({
+        id: url.id.toString(),
+        shortCode: "Db00001",
+        longUrl: "https://example.com/db",
+        customSlug: null,
+      }),
     );
   });
 
   it("resolves custom slugs and populates both cache aliases", async () => {
-    await db
+    const [url] = await db
       .insert(urls)
-      .values({ shortCode: "Db00001", customSlug: "docs", longUrl: "https://example.com/docs" });
+      .values({ shortCode: "Db00001", customSlug: "docs", longUrl: "https://example.com/docs" })
+      .returning();
 
     await expect(getFromShortUrl("docs")).resolves.toEqual(
       expect.objectContaining({
@@ -52,6 +60,7 @@ describe("getFromShortUrl", () => {
     );
     await expect(redis.get(shortUrlCacheKey("Db00001"))).resolves.toBe(
       JSON.stringify({
+        id: url.id.toString(),
         shortCode: "Db00001",
         longUrl: "https://example.com/docs",
         customSlug: "docs",
@@ -59,6 +68,7 @@ describe("getFromShortUrl", () => {
     );
     await expect(redis.get(shortUrlCacheKey("docs"))).resolves.toBe(
       JSON.stringify({
+        id: url.id.toString(),
         shortCode: "Db00001",
         longUrl: "https://example.com/docs",
         customSlug: "docs",

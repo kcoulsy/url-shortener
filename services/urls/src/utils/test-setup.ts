@@ -33,7 +33,10 @@ const redis = new Redis({
 });
 
 async function runMigration(fileName: string): Promise<void> {
-  const migration = await readFile(join(process.cwd(), "drizzle", fileName), "utf8");
+  const migration = await readFile(
+    join(process.cwd(), "../../packages/db/drizzle", fileName),
+    "utf8",
+  );
   const statements = migration
     .split("--> statement-breakpoint")
     .map((statement) => statement.trim())
@@ -45,15 +48,17 @@ async function runMigration(fileName: string): Promise<void> {
 }
 
 async function resetSchema(): Promise<void> {
+  await pool.query('DROP TABLE IF EXISTS "analytics_events"');
   await pool.query('DROP TABLE IF EXISTS "urls"');
   await runMigration("0000_quiet_shiver_man.sql");
   await runMigration("0001_wild_ogun.sql");
   await runMigration("0002_owner_sub.sql");
   await runMigration("0003_cool_wild_pack.sql");
+  await runMigration("0004_analytics_events.sql");
 }
 
 async function resetData(): Promise<void> {
-  await pool.query('TRUNCATE TABLE "urls" RESTART IDENTITY');
+  await pool.query('TRUNCATE TABLE "analytics_events", "urls" RESTART IDENTITY');
   await redis.flushdb();
 }
 
@@ -79,7 +84,7 @@ afterAll(async () => {
   redis.disconnect();
 
   const [{ closeDatabase }, { redis: appRedis }] = await Promise.all([
-    import("../db/client.js"),
+    import("@aws-project/db"),
     import("../cache/client.js"),
   ]);
 

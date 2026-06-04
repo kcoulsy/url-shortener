@@ -1,6 +1,5 @@
+import { db, urls } from "@aws-project/db";
 import { desc, eq } from "drizzle-orm";
-import { db } from "../db/client.js";
-import { urls } from "../db/schema.js";
 
 export type ListShortUrl = Pick<
   typeof urls.$inferSelect,

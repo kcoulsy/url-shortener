@@ -7,7 +7,8 @@ const shortUrlCacheTtlSeconds = 60 * 60 * 24;
 
 export async function createCachedShortUrl(url: CachedShortUrl): Promise<void> {
   try {
-    const cacheEntry: CachedShortUrl = {
+    const cacheEntry = {
+      id: url.id?.toString(),
       shortCode: url.shortCode,
       longUrl: url.longUrl,
       customSlug: url.customSlug,

@@ -3,5 +3,10 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": ["sst.config.ts", "packages/**/*.ts", "services/urls/**/*.ts"]
+  "include": [
+    "sst.config.ts",
+    "packages/**/*.ts",
+    "services/analytics/**/*.ts",
+    "services/urls/**/*.ts"
+  ]
 }

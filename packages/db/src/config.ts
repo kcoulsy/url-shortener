@@ -1,8 +1,4 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
-import * as schema from "./schema.js";
-
-type PostgresResource = {
+export type PostgresResource = {
   host: string;
   port: number;
   username: string;
@@ -10,7 +6,7 @@ type PostgresResource = {
   database: string;
 };
 
-function getDatabaseConfig(): PostgresResource {
+export function getDatabaseConfig(): PostgresResource {
   const linkedResource = process.env.SST_RESOURCE_ShorteningPostgres;
   if (linkedResource) {
     return JSON.parse(linkedResource) as PostgresResource;
@@ -25,18 +21,10 @@ function getDatabaseConfig(): PostgresResource {
   };
 }
 
-const database = getDatabaseConfig();
+export function databaseUrl(database = getDatabaseConfig()): string {
+  const username = encodeURIComponent(database.username);
+  const password = encodeURIComponent(database.password);
+  const host = database.host === "localhost" ? "127.0.0.1" : database.host;
 
-const pool = new Pool({
-  host: database.host,
-  port: database.port,
-  user: database.username,
-  password: database.password,
-  database: database.database,
-});
-
-export const db = drizzle(pool, { schema });
-
-export async function closeDatabase(): Promise<void> {
-  await pool.end();
+  return `postgresql://${username}:${password}@${host}:${database.port}/${database.database}`;
 }

@@ -1,0 +1,30 @@
+{
+  "name": "analytics",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm bundle",
+    "bundle": "esbuild --bundle --format=esm --outfile=./dist/handler.js --platform=node --target=node20 --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" ./src/handler.ts",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx ./src/worker.ts",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint src --deny-warnings",
+    "lint:fix": "oxlint src --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@aws-project/db": "workspace:*",
+    "@aws-sdk/client-sqs": "^3.1060.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.149",
+    "@vitest/coverage-v8": "^4.1.8",
+    "esbuild": "^0.21.4",
+    "tsx": "^4.21.0",
+    "vitest": "^4.1.8"
+  }
+}

@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import "../utils/test-setup.js";
+import { db, urls } from "@aws-project/db";
 import { redis } from "../cache/client.js";
-import { db } from "../db/client.js";
-import { urls } from "../db/schema.js";
 import { shortUrlCacheKey } from "../utils/short-url-cache-key.js";
 import { createShortUrl, CustomSlugUnavailableError } from "./create-short-url.js";
 
@@ -47,6 +46,7 @@ describe("createShortUrl", () => {
     });
     await expect(redis.get(shortUrlCacheKey("New0001"))).resolves.toBe(
       JSON.stringify({
+        id: stored.id.toString(),
         shortCode: "New0001",
         longUrl: "https://example.com/new",
         customSlug: null,
@@ -67,8 +67,10 @@ describe("createShortUrl", () => {
       longUrl: "https://example.com/custom",
       ownerSub: "user-1",
     });
+    const id = url.id.toString();
     await expect(redis.get(shortUrlCacheKey("Gen0001"))).resolves.toBe(
       JSON.stringify({
+        id,
         shortCode: "Gen0001",
         longUrl: "https://example.com/custom",
         customSlug: "summer-sale",
@@ -76,6 +78,7 @@ describe("createShortUrl", () => {
     );
     await expect(redis.get(shortUrlCacheKey("summer-sale"))).resolves.toBe(
       JSON.stringify({
+        id,
         shortCode: "Gen0001",
         longUrl: "https://example.com/custom",
         customSlug: "summer-sale",

@@ -29,6 +29,13 @@
       "when": 1780568581707,
       "tag": "0003_cool_wild_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780578000000,
+      "tag": "0004_analytics_events",
+      "breakpoints": true
     }
   ]
 }

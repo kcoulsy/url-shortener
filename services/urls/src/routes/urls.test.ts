@@ -1,10 +1,14 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import "../utils/test-setup.js";
+import { db, urls } from "@aws-project/db";
+import { publishRedirectEvent } from "../analytics/publisher.js";
 import { redis } from "../cache/client.js";
-import { db } from "../db/client.js";
-import { urls } from "../db/schema.js";
 import { shortUrlCacheKey } from "../utils/short-url-cache-key.js";
 import app from "./urls.js";
+
+vi.mock("../analytics/publisher.js", () => ({
+  publishRedirectEvent: vi.fn(),
+}));
 
 vi.mock("aws-jwt-verify", () => ({
   CognitoJwtVerifier: {
@@ -25,6 +29,11 @@ function authorization(sub = "user-1") {
 }
 
 describe("urls routes", () => {
+  beforeEach(() => {
+    vi.mocked(publishRedirectEvent).mockReset();
+    vi.mocked(publishRedirectEvent).mockResolvedValue(undefined);
+  });
+
   it("creates a short URL with a real database row and Redis cache entry", async () => {
     const longUrl = "https://example.com/articles/full-test-coverage";
     const response = await app.request("http://localhost/urls", {
@@ -58,7 +67,14 @@ describe("urls routes", () => {
     });
 
     const cached = await redis.get(shortUrlCacheKey(body.shortCode));
-    expect(cached).toBe(JSON.stringify({ shortCode: body.shortCode, longUrl, customSlug: null }));
+    expect(cached).toBe(
+      JSON.stringify({
+        id: stored.id.toString(),
+        shortCode: body.shortCode,
+        longUrl,
+        customSlug: null,
+      }),
+    );
   });
 
   it("creates a custom slug while still generating a short code", async () => {
@@ -95,6 +111,7 @@ describe("urls routes", () => {
     expect(body.shortCode).not.toBe("summer-sale");
 
     const payload = JSON.stringify({
+      id: stored.id.toString(),
       shortCode: body.shortCode,
       longUrl,
       customSlug: "summer-sale",
@@ -254,6 +271,12 @@ describe("urls routes", () => {
 
     expect(response.status).toBe(302);
     expect(response.headers.get("location")).toBe("https://example.com/redirect");
+    expect(publishRedirectEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pathSegment: "Rdr123Z",
+        shortCode: "Rdr123Z",
+      }),
+    );
   });
 
   it("redirects to the long URL when redirect mode is explicit", async () => {
@@ -263,6 +286,16 @@ describe("urls routes", () => {
 
     expect(response.status).toBe(302);
     expect(response.headers.get("location")).toBe("https://example.com/mode");
+  });
+
+  it("does not wait for analytics publishing before redirecting", async () => {
+    vi.mocked(publishRedirectEvent).mockRejectedValueOnce(new Error("sqs unavailable"));
+    await db.insert(urls).values({ shortCode: "Fast123", longUrl: "https://example.com/fast" });
+
+    const response = await app.request("/urls/Fast123");
+
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe("https://example.com/fast");
   });
 
   it("redirects custom slugs to the long URL", async () => {

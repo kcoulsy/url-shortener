@@ -1,6 +1,5 @@
-import { or, eq } from "drizzle-orm";
-import { db } from "../db/client.js";
-import { urls } from "../db/schema.js";
+import { db, urls } from "@aws-project/db";
+import { eq, or } from "drizzle-orm";
 import { isUniqueViolation } from "../utils/errors.js";
 import { logger } from "../utils/logger.js";
 import { createShortCode } from "../utils/short-code.js";

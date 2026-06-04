@@ -28,6 +28,35 @@ services:
     volumes:
       - redis_data:/data
 
+  localstack:
+    image: docker.io/localstack/localstack:4
+    ports:
+      - "4566:4566"
+    environment:
+      AWS_DEFAULT_REGION: us-east-1
+      SERVICES: sqs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - localstack_data:/var/lib/localstack
+
+  localstack-init:
+    image: docker.io/localstack/localstack:4
+    depends_on:
+      localstack:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      awslocal --endpoint-url=http://localstack:4566 sqs create-queue --queue-name analytics-events
+
 volumes:
   postgres_data:
   redis_data:
+  localstack_data:

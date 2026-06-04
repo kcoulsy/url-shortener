@@ -7,6 +7,7 @@ import type {
   GetLinkInfoResponse,
   ListLinksResponse,
 } from "../types.js";
+import { publishRedirectEvent } from "../analytics/publisher.js";
 import { requireAuth } from "../middleware/auth.js";
 import { createShortUrl, CustomSlugUnavailableError } from "../mutations/create-short-url.js";
 import { getFromShortUrl, getOwnedShortUrl } from "../queries/get-from-short-url.js";
@@ -118,6 +119,17 @@ app.get(
 
       return c.json(body);
     }
+
+    void publishRedirectEvent({
+      shortCode: url.shortCode,
+      pathSegment: shortCode,
+      occurredAt: new Date().toISOString(),
+      urlId: url.id?.toString(),
+      referrer: c.req.header("referer") ?? c.req.header("referrer"),
+      userAgent: c.req.header("user-agent"),
+    }).catch((error) => {
+      logger.warn({ error, shortCode: url.shortCode }, "Could not publish redirect analytics");
+    });
 
     return c.redirect(url.longUrl);
   },

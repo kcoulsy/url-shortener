@@ -10,7 +10,8 @@ http:
     type: json
     data: |-
       {
-        "url": "https://www.google.com"
+        "url": "https://www.google.com",
+        "customSlug": "google"
       }
   auth: inherit
 

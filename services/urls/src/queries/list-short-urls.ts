@@ -2,12 +2,16 @@ import { desc, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { urls } from "../db/schema.js";
 
-export type ListShortUrl = Pick<typeof urls.$inferSelect, "shortCode" | "longUrl" | "createdAt">;
+export type ListShortUrl = Pick<
+  typeof urls.$inferSelect,
+  "shortCode" | "customSlug" | "longUrl" | "createdAt"
+>;
 
 export async function listShortUrls(ownerSub: string): Promise<ListShortUrl[]> {
   return db
     .select({
       shortCode: urls.shortCode,
+      customSlug: urls.customSlug,
       longUrl: urls.longUrl,
       createdAt: urls.createdAt,
     })

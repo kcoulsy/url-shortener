@@ -36,6 +36,7 @@ describe("urls routes", () => {
       success: boolean;
       longUrl: string;
       shortCode: string;
+      customSlug: string | null;
       shortUrl: string;
     };
 
@@ -44,14 +45,90 @@ describe("urls routes", () => {
       success: true,
       longUrl,
       shortCode: expect.stringMatching(/^[0-9a-zA-Z]{7}$/),
+      customSlug: null,
       shortUrl: `http://localhost/urls/${body.shortCode}`,
     });
 
     const [stored] = await db.select().from(urls);
-    expect(stored).toMatchObject({ longUrl, shortCode: body.shortCode, ownerSub: "user-1" });
+    expect(stored).toMatchObject({
+      longUrl,
+      shortCode: body.shortCode,
+      customSlug: null,
+      ownerSub: "user-1",
+    });
 
     const cached = await redis.get(shortUrlCacheKey(body.shortCode));
-    expect(cached).toBe(JSON.stringify({ shortCode: body.shortCode, longUrl }));
+    expect(cached).toBe(JSON.stringify({ shortCode: body.shortCode, longUrl, customSlug: null }));
+  });
+
+  it("creates a custom slug while still generating a short code", async () => {
+    const longUrl = "https://example.com/articles/custom-slug";
+    const response = await app.request("http://localhost/urls", {
+      method: "POST",
+      headers: { "content-type": "application/json", ...authorization() },
+      body: JSON.stringify({ url: longUrl, customSlug: "summer-sale" }),
+    });
+    const body = (await response.json()) as {
+      success: boolean;
+      longUrl: string;
+      shortCode: string;
+      customSlug: string;
+      shortUrl: string;
+    };
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      success: true,
+      longUrl,
+      shortCode: expect.stringMatching(/^[0-9a-zA-Z]{7}$/),
+      customSlug: "summer-sale",
+      shortUrl: "http://localhost/urls/summer-sale",
+    });
+
+    const [stored] = await db.select().from(urls);
+    expect(stored).toMatchObject({
+      longUrl,
+      shortCode: body.shortCode,
+      customSlug: "summer-sale",
+      ownerSub: "user-1",
+    });
+    expect(body.shortCode).not.toBe("summer-sale");
+
+    const payload = JSON.stringify({
+      shortCode: body.shortCode,
+      longUrl,
+      customSlug: "summer-sale",
+    });
+    await expect(redis.get(shortUrlCacheKey(body.shortCode))).resolves.toBe(payload);
+    await expect(redis.get(shortUrlCacheKey("summer-sale"))).resolves.toBe(payload);
+  });
+
+  it("returns 409 when a custom slug is unavailable", async () => {
+    await db
+      .insert(urls)
+      .values({ shortCode: "Taken01", customSlug: "claimed", longUrl: "https://example.com/old" });
+
+    const response = await app.request("/urls", {
+      method: "POST",
+      headers: { "content-type": "application/json", ...authorization() },
+      body: JSON.stringify({ url: "https://example.com/new", customSlug: "claimed" }),
+    });
+
+    await expect(response.json()).resolves.toEqual({
+      success: false,
+      error: "Custom slug already exists",
+    });
+    expect(response.status).toBe(409);
+  });
+
+  it("rejects invalid custom slugs", async () => {
+    const response = await app.request("/urls", {
+      method: "POST",
+      headers: { "content-type": "application/json", ...authorization() },
+      body: JSON.stringify({ url: "https://example.com/new", customSlug: "bad.slug" }),
+    });
+
+    expect(response.status).toBe(400);
   });
 
   it("rejects invalid URL JSON", async () => {
@@ -117,6 +194,7 @@ describe("urls routes", () => {
     await expect(response.json()).resolves.toEqual({
       success: true,
       shortCode: "Abc123Z",
+      customSlug: null,
       longUrl: "https://example.com/info",
     });
     expect(response.status).toBe(200);
@@ -150,6 +228,25 @@ describe("urls routes", () => {
     expect(response.status).toBe(401);
   });
 
+  it("returns URL info for a custom slug owned by the authenticated user", async () => {
+    await db.insert(urls).values({
+      shortCode: "Slug001",
+      customSlug: "docs",
+      longUrl: "https://example.com/docs",
+      ownerSub: "user-1",
+    });
+
+    const response = await app.request("/urls/docs?mode=info", { headers: authorization() });
+
+    await expect(response.json()).resolves.toEqual({
+      success: true,
+      shortCode: "Slug001",
+      customSlug: "docs",
+      longUrl: "https://example.com/docs",
+    });
+    expect(response.status).toBe(200);
+  });
+
   it("redirects to the long URL by default", async () => {
     await db.insert(urls).values({ shortCode: "Rdr123Z", longUrl: "https://example.com/redirect" });
 
@@ -168,8 +265,19 @@ describe("urls routes", () => {
     expect(response.headers.get("location")).toBe("https://example.com/mode");
   });
 
+  it("redirects custom slugs to the long URL", async () => {
+    await db
+      .insert(urls)
+      .values({ shortCode: "Slug001", customSlug: "docs", longUrl: "https://example.com/docs" });
+
+    const response = await app.request("/urls/docs");
+
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe("https://example.com/docs");
+  });
+
   it("rejects invalid short codes", async () => {
-    const response = await app.request("/urls/not-valid");
+    const response = await app.request("/urls/bad.slug");
 
     await expect(response.json()).resolves.toEqual({ success: false, error: "Invalid short code" });
     expect(response.status).toBe(400);

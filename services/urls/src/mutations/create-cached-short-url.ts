@@ -10,19 +10,28 @@ export async function createCachedShortUrl(url: CachedShortUrl): Promise<void> {
     const cacheEntry: CachedShortUrl = {
       shortCode: url.shortCode,
       longUrl: url.longUrl,
+      customSlug: url.customSlug,
     };
+    const pathSegments = url.customSlug ? [url.shortCode, url.customSlug] : [url.shortCode];
 
-    await redis.set(
-      shortUrlCacheKey(url.shortCode),
-      JSON.stringify(cacheEntry),
-      "EX",
-      shortUrlCacheTtlSeconds,
+    await Promise.all(
+      pathSegments.map((pathSegment) =>
+        redis.set(
+          shortUrlCacheKey(pathSegment),
+          JSON.stringify(cacheEntry),
+          "EX",
+          shortUrlCacheTtlSeconds,
+        ),
+      ),
     );
     logger.debug(
-      { shortCode: url.shortCode, ttlSeconds: shortUrlCacheTtlSeconds },
+      { shortCode: url.shortCode, customSlug: url.customSlug, ttlSeconds: shortUrlCacheTtlSeconds },
       "Short URL cached",
     );
   } catch (error) {
-    logger.warn({ error, shortCode: url.shortCode }, "Could not write short URL to Redis cache");
+    logger.warn(
+      { error, shortCode: url.shortCode, customSlug: url.customSlug },
+      "Could not write short URL to Redis cache",
+    );
   }
 }

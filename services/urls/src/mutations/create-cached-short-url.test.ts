@@ -20,6 +20,29 @@ describe("createCachedShortUrl", () => {
     await expect(redis.ttl(key)).resolves.toBeLessThanOrEqual(60 * 60 * 24);
   });
 
+  it("writes custom slug aliases with the same cache payload", async () => {
+    await createCachedShortUrl({
+      shortCode: "Cache01",
+      customSlug: "docs",
+      longUrl: "https://example.com/cache",
+    });
+
+    await expect(
+      redis.get(shortUrlCacheKey("Cache01")).then((value) => JSON.parse(value ?? "")),
+    ).resolves.toEqual({
+      shortCode: "Cache01",
+      customSlug: "docs",
+      longUrl: "https://example.com/cache",
+    });
+    await expect(
+      redis.get(shortUrlCacheKey("docs")).then((value) => JSON.parse(value ?? "")),
+    ).resolves.toEqual({
+      shortCode: "Cache01",
+      customSlug: "docs",
+      longUrl: "https://example.com/cache",
+    });
+  });
+
   it("swallows Redis write failures and logs a warning", async () => {
     const setSpy = vi.spyOn(redis, "set").mockRejectedValueOnce(new Error("redis write failed"));
     const { logger } = await import("../utils/logger.js");

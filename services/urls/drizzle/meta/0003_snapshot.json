@@ -1,6 +1,6 @@
 {
-  "id": "a2be890c-d720-4609-94ab-49a077d833da",
-  "prevId": "d54563a0-089d-4a14-8510-bf5c70e871cc",
+  "id": "e5a2b5e1-db90-4c24-9e51-e85ad74774b2",
+  "prevId": "6b47dc9a-c2b1-4f60-b890-0a2de173fc2e",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -26,6 +26,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "owner_sub": {
+          "name": "owner_sub",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "custom_slug": {
+          "name": "custom_slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -40,6 +52,21 @@
           "columns": [
             {
               "expression": "short_code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "urls_custom_slug_unique": {
+          "name": "urls_custom_slug_unique",
+          "columns": [
+            {
+              "expression": "custom_slug",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

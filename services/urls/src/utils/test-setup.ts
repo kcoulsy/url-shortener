@@ -49,6 +49,7 @@ async function resetSchema(): Promise<void> {
   await runMigration("0000_quiet_shiver_man.sql");
   await runMigration("0001_wild_ogun.sql");
   await runMigration("0002_owner_sub.sql");
+  await runMigration("0003_cool_wild_pack.sql");
 }
 
 async function resetData(): Promise<void> {

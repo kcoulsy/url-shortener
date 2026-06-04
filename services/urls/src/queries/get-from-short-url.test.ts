@@ -10,12 +10,17 @@ describe("getFromShortUrl", () => {
   it("returns cached entries without needing a database row", async () => {
     await redis.set(
       shortUrlCacheKey("Cached1"),
-      JSON.stringify({ shortCode: "Cached1", longUrl: "https://example.com/cached" }),
+      JSON.stringify({
+        shortCode: "Cached1",
+        longUrl: "https://example.com/cached",
+        customSlug: null,
+      }),
     );
 
     await expect(getFromShortUrl("Cached1")).resolves.toEqual({
       shortCode: "Cached1",
       longUrl: "https://example.com/cached",
+      customSlug: null,
     });
   });
 
@@ -29,7 +34,35 @@ describe("getFromShortUrl", () => {
       }),
     );
     await expect(redis.get(shortUrlCacheKey("Db00001"))).resolves.toBe(
-      JSON.stringify({ shortCode: "Db00001", longUrl: "https://example.com/db" }),
+      JSON.stringify({ shortCode: "Db00001", longUrl: "https://example.com/db", customSlug: null }),
+    );
+  });
+
+  it("resolves custom slugs and populates both cache aliases", async () => {
+    await db
+      .insert(urls)
+      .values({ shortCode: "Db00001", customSlug: "docs", longUrl: "https://example.com/docs" });
+
+    await expect(getFromShortUrl("docs")).resolves.toEqual(
+      expect.objectContaining({
+        shortCode: "Db00001",
+        customSlug: "docs",
+        longUrl: "https://example.com/docs",
+      }),
+    );
+    await expect(redis.get(shortUrlCacheKey("Db00001"))).resolves.toBe(
+      JSON.stringify({
+        shortCode: "Db00001",
+        longUrl: "https://example.com/docs",
+        customSlug: "docs",
+      }),
+    );
+    await expect(redis.get(shortUrlCacheKey("docs"))).resolves.toBe(
+      JSON.stringify({
+        shortCode: "Db00001",
+        longUrl: "https://example.com/docs",
+        customSlug: "docs",
+      }),
     );
   });
 

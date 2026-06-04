@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: http://localhost:3000/urls/EuhU4XU?mode=info
+  url: http://localhost:3000/urls/google?mode=info
   params:
     - name: mode
       value: info

@@ -38,6 +38,9 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.8.0
         version: 0.8.0(hono@4.12.23)(zod@4.4.3)
+      aws-jwt-verify:
+        specifier: ^5.1.1
+        version: 5.1.1
       drizzle-orm:
         specifier: ^0.44.7
         version: 0.44.7(@types/pg@8.20.0)(pg@8.21.0)
@@ -1547,6 +1550,10 @@ packages:
   atomic-sleep@1.0.0:
     resolution: {integrity: sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==}
     engines: {node: '>=8.0.0'}
+
+  aws-jwt-verify@5.1.1:
+    resolution: {integrity: sha512-j6whGdGJmQ27agk4ijY8RPv6itb8JLb7SCJ86fEnneTcSBrpxuwL8kLq6y5WVH95aIknyAloEqAsaOLS1J8ITQ==}
+    engines: {node: '>=18.0.0'}
 
   aws4fetch@1.0.18:
     resolution: {integrity: sha512-3Cf+YaUl07p24MoQ46rFwulAmiyCwH2+1zw1ZyPAX5OtJ34Hh185DwB8y/qRLb6cYYYtSFJ9pthyLc0MD4e8sQ==}
@@ -3663,6 +3670,8 @@ snapshots:
       js-tokens: 10.0.0
 
   atomic-sleep@1.0.0: {}
+
+  aws-jwt-verify@5.1.1: {}
 
   aws4fetch@1.0.18: {}
 

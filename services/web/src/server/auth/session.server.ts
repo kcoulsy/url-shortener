@@ -1,6 +1,6 @@
 import { dev } from "$app/environment";
 import type { Cookies, RequestEvent } from "@sveltejs/kit";
-import { refreshAuthTokens, type AuthTokens } from "./cognito";
+import { refreshAuthTokens, type AuthTokens } from "./cognito.server";
 
 const accessTokenCookie = "access_token";
 const idTokenCookie = "id_token";

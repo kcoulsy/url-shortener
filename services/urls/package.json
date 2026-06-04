@@ -1,12 +1,6 @@
 {
   "name": "urls",
   "type": "module",
-  "exports": {
-    "./types": {
-      "types": "./src/types.ts",
-      "default": "./src/types.ts"
-    }
-  },
   "scripts": {
     "bundle": "esbuild --bundle --format=esm --outfile=./dist/index.js --platform=node --target=node20 --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" ./src/index.ts",
     "build": "pnpm bundle",

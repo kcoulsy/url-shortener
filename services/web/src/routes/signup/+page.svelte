@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { Button, PasswordInput, TextInput } from '$lib';
+	import Button from '$components/ui/Button.svelte';
+	import PasswordInput from '$components/ui/PasswordInput.svelte';
+	import TextInput from '$components/ui/TextInput.svelte';
 	import type { ActionData } from './$types';
 
 	let { form }: { form: ActionData } = $props();

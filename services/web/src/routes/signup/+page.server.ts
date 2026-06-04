@@ -1,5 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
-import { signUpUser } from "$lib/server/auth/cognito";
+import { signUpUser } from "$server/auth/cognito.server";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals }) => {

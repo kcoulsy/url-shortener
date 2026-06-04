@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, TextInput } from '$lib';
+	import Button from '$components/ui/Button.svelte';
+	import TextInput from '$components/ui/TextInput.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();

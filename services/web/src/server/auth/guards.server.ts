@@ -1,5 +1,5 @@
 import { redirect } from "@sveltejs/kit";
-import type { AuthSession } from "./session";
+import type { AuthSession } from "./session.server";
 
 export function requireUserSession(locals: App.Locals): AuthSession {
   if (!locals.user || !locals.accessToken) {

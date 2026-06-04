@@ -6,7 +6,7 @@ import type {
   ErrorResponse,
   GetLinkInfoResponse,
   ListLinksResponse,
-} from "urls/types";
+} from "../types.js";
 import { requireAuth } from "../middleware/auth.js";
 import { createShortUrl, CustomSlugUnavailableError } from "../mutations/create-short-url.js";
 import { getFromShortUrl, getOwnedShortUrl } from "../queries/get-from-short-url.js";

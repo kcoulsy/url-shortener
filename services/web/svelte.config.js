@@ -8,6 +8,12 @@ const config = {
   },
   kit: {
     adapter: adapter(),
+    alias: {
+      "@urls": "../urls/src",
+      $assets: "src/assets",
+      $components: "src/components",
+      $server: "src/server",
+    },
   },
 };
 

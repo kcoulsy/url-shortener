@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { CreateLinkForm, RecentLinksTable } from '$lib/features/links';
+	import CreateLinkForm from '$components/links/CreateLinkForm.svelte';
+	import RecentLinksTable from '$components/links/RecentLinksTable.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -28,7 +29,7 @@
 		</header>
 
 		<section class="grid gap-6 lg:grid-cols-[minmax(0,420px)_1fr]">
-			<CreateLinkForm {form} />
+			<CreateLinkForm {form} urlsBase={data.urlsBase} />
 			<RecentLinksTable links={data.links} />
 		</section>
 	</div>

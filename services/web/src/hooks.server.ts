@@ -1,5 +1,5 @@
 import type { Handle } from "@sveltejs/kit";
-import { getAuthSession } from "$lib/server/auth/session";
+import { getAuthSession } from "$server/auth/session.server";
 
 export const handle: Handle = async ({ event, resolve }) => {
   const session = await getAuthSession(event);

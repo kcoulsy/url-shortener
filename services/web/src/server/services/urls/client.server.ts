@@ -1,14 +1,27 @@
 import { env } from "$env/dynamic/public";
-import type { CreatedLink, CreateLinkResponse, Link, LinksResponse, ServiceLink } from "./types";
+import type {
+  CreateLinkRequest,
+  CreateLinkResponse,
+  ListLinksResponse,
+  ServiceLink,
+} from "@urls/types";
 
 type ServerFetch = typeof fetch;
 
-function urlsApiBase(): string {
+export type Link = ServiceLink & {
+  shortUrl: string;
+};
+
+export type CreatedLink = {
+  shortUrl: string;
+};
+
+export function urlsApiBase(): string {
   return env.PUBLIC_URLS_URL || "http://localhost:3000";
 }
 
-function publicShortUrl(shortCode: string): string {
-  return new URL(`/urls/${shortCode}`, urlsApiBase()).toString();
+function publicShortUrl(link: Pick<ServiceLink, "customSlug" | "shortCode">): string {
+  return new URL(`/urls/${link.customSlug ?? link.shortCode}`, urlsApiBase()).toString();
 }
 
 function authHeaders(accessToken: string): HeadersInit {
@@ -22,7 +35,7 @@ async function readJson<T>(response: Response): Promise<T> {
 function toLink(link: ServiceLink): Link {
   return {
     ...link,
-    shortUrl: publicShortUrl(link.shortCode),
+    shortUrl: publicShortUrl(link),
   };
 }
 
@@ -32,19 +45,19 @@ export function urlsService(serverFetch: ServerFetch, accessToken: string) {
       const response = await serverFetch(`${urlsApiBase()}/urls`, {
         headers: authHeaders(accessToken),
       });
-      const body = await readJson<LinksResponse>(response);
+      const body = await readJson<ListLinksResponse>(response);
 
       return body.success ? body.links.map(toLink) : [];
     },
 
-    async createLink(url: string): Promise<CreatedLink> {
+    async createLink(input: CreateLinkRequest): Promise<CreatedLink> {
       const response = await serverFetch(`${urlsApiBase()}/urls`, {
         method: "POST",
         headers: {
           ...authHeaders(accessToken),
           "content-type": "application/json",
         },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify(input),
       });
       const body = await readJson<CreateLinkResponse>(response);
 
@@ -52,7 +65,7 @@ export function urlsService(serverFetch: ServerFetch, accessToken: string) {
         throw new Error(body.success ? "Could not create short link." : body.error);
       }
 
-      return { shortUrl: body.shortUrl || publicShortUrl(body.shortCode) };
+      return { shortUrl: body.shortUrl || publicShortUrl(body) };
     },
   };
 }

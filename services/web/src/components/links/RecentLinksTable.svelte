@@ -1,8 +1,15 @@
 <script lang="ts">
-	import { Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '$lib';
+	import Badge from '$components/ui/Badge.svelte';
+	import Table from '$components/ui/Table.svelte';
+	import TableBody from '$components/ui/TableBody.svelte';
+	import TableCell from '$components/ui/TableCell.svelte';
+	import TableHead from '$components/ui/TableHead.svelte';
+	import TableHeader from '$components/ui/TableHeader.svelte';
+	import TableRow from '$components/ui/TableRow.svelte';
 
 	type Link = {
 		createdAt: string;
+		customSlug: string | null;
 		longUrl: string;
 		shortCode: string;
 		shortUrl: string;

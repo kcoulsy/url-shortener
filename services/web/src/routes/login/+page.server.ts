@@ -1,6 +1,6 @@
 import { fail, redirect } from "@sveltejs/kit";
-import { authenticateUser } from "$lib/server/auth/cognito";
-import { setAuthCookies } from "$lib/server/auth/session";
+import { authenticateUser } from "$server/auth/cognito.server";
+import { setAuthCookies } from "$server/auth/session.server";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals }) => {
